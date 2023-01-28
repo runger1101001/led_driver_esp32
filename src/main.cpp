@@ -1,65 +1,56 @@
 
 #include "Arduino.h"
 #include <Adafruit_NeoPixel.h>
-#ifdef __AVR__
-  #include <avr/power.h>
-#endif
 #include "SPI.h"
 
+#include "./hw_setup.h"
+#include "./wifi.h"
+#include "./homekit.h"
+#include "./pixels.h"
+#include "./current.h"
 
-const uint16_t PixelCount = 6 * 16;
-const uint8_t PixelPin = 18;
+Adafruit_NeoPixel* pixels;
 
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(PixelCount, PixelPin, NEO_GRB + NEO_KHZ800);
-
-uint32_t off  = strip.Color(0, 0, 0);
-uint32_t green = strip.Color(0, 255, 0);
-
+long ts;
+int panelDetected;
 
 void setup() {
-   Serial.begin(115200);
+    Serial.begin(115200);
+    delay(1000);
     while (!Serial); // wait for serial attach
 
     Serial.println();
     Serial.println("Initializing...");
     Serial.flush();
 
-    pinMode(19, OUTPUT);
-    digitalWrite(19, HIGH);
+    initCurrentSense();
+    pixels = initStrip();
+    init_homekit(pixels); // also takes care of wifi
 
-    // this resets all the neopixels to an off state
-    strip.begin();
-    strip.setBrightness(50);
-    strip.show(); // Initialize all pixels to 'off'
+    pinMode(PIN_SENSE, INPUT);
+    panelDetected = digitalRead(PIN_SENSE);
+    Serial.println("Sense input is: " + String(panelDetected));
+
+    setAnimation(true, 1000);
 
     Serial.println();
     Serial.println("Running...");
+    ts = millis();
 }
 
 
-
-void setPixels(int num, uint32_t col) {
-  int i;
-  for (i=0;i<num;i++) {
-    strip.setPixelColor(i, col);
-  }
-  for (;i<PixelCount;i++) {
-    strip.setPixelColor(i, off);
-  }
-  strip.show();
-}
-
-
-uint16_t iter = 0;
 
 void loop() {
-  //setPixels(iter, strip.Color(rand()%256, rand()%256, rand()%256));
-  strip.setPixelColor(iter, strip.Color(rand()%256, rand()%256, rand()%256));
-  strip.show();
-  if (++iter > PixelCount) {
-    strip.clear();
-    iter = 0;
+  homeSpan.poll();
+  handleWebserver();
+  handleAnimation();
+  long now = millis();
+  if (now - ts > 1000) {
+    Serial.print("Current: ");
+    Serial.print(getCurrentRaw());
+    Serial.print(" = ");
+    Serial.print(getCurrent());
+    Serial.println("A");
+    ts = now;
   }
-  delay(1000);
-  Serial.println("Running...");
 }
