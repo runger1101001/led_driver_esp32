@@ -16,12 +16,12 @@ int panelDetected;
 
 void setup() {
     Serial.begin(115200);
-    delay(1000);
-    while (!Serial); // wait for serial attach
+    delay(3000);
+    //while (!Serial); // wait for serial attach
 
     Serial.println();
     Serial.println("Initializing...");
-    Serial.flush();
+    //Serial.flush();
 
     initCurrentSense();
     pixels = initStrip();
