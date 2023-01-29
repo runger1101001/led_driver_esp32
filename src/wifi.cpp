@@ -25,7 +25,7 @@ void initWebserver(){
         webServer.send(200, "application/json", "");
     });
 
-    webServer.on(UriBraces("/pixels/{}"), HTTP_GET, [](){
+    webServer.on(UriBraces("/trixels/{}"), HTTP_GET, [](){
         String pix = webServer.pathArg(0);
         int pixel = pix.toInt();
         String color = webServer.arg("color");
@@ -33,7 +33,7 @@ void initWebserver(){
         String g = webServer.arg("g");
         String b = webServer.arg("b");
         String br = webServer.arg("brightness");
-        Serial.println("Setting pixel " + pix + " to " + r + "," + g + "," + b + " with brightness " + br);
+        Serial.println("Setting trixel " + pix + " to " + r + "," + g + "," + b + " with brightness " + br);
         if (br!="") {
             setBrightness(br.toInt());
         }
@@ -53,7 +53,7 @@ void initWebserver(){
         webServer.send(200, "application/json", "{ \"r\":" + r + ", \"g\":" + g + ", \"b\":" + b + ", \"brightness\":" + getBrightness() + " }");
     });
 
-    webServer.on("/pixels", HTTP_PUT, [](){
+    webServer.on("/trixels", HTTP_PUT, [](){
         // TODO
         webServer.send(200, "application/json", "");
     });
@@ -69,6 +69,8 @@ void initWebserver(){
 
     webServer.on("/animation", HTTP_GET, [](){
         String en = webServer.arg("enable");
+        if (en=="")
+            en = webServer.arg("enabled"); // support both, its a common mistake
         String delay = webServer.arg("delay");
         int delayMs = getAnimationDelayMs();
         if (delay!="")
@@ -79,11 +81,13 @@ void initWebserver(){
             else
                 setAnimation(false);
         }
-        String json = "{\"enabled\":";
+        else if (delay!="")
+            setAnimation(isAnimation(), delayMs);
+        String json = "{ \"enabled\":";
         json += isAnimation() ? "true" : "false";
-        json += ",\"delay\":";
+        json += ", \"delay\":";
         json += getAnimationDelayMs();
-        json += "}";
+        json += " }";
         webServer.send(200, "application/json", json);
     });
 
