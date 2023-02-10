@@ -12,7 +12,7 @@ WebServer webServer(80);
 
 void initWebserver(){
     Serial.println("Starting webserver...");
-
+    webServer.enableCORS(true);
     webServer.begin();
 
     webServer.on("/", [](){
@@ -53,13 +53,33 @@ void initWebserver(){
         webServer.send(200, "application/json", "{ \"r\":" + r + ", \"g\":" + g + ", \"b\":" + b + ", \"brightness\":" + getBrightness() + " }");
     });
 
+    webServer.on("/trixels", HTTP_OPTIONS, [](){
+        webServer.send(200, "application/json", "");
+    });
+
+
     webServer.on("/trixels", HTTP_PUT, [](){
-        // TODO
+        String hex = webServer.arg("plain");
+        if (hex!="") {
+            int i=0;
+            while ((i+6) <= hex.length()){
+                
+            }
+        }
+        webServer.send(200, "application/json", "");
+    });
+
+    webServer.on("/trixels", HTTP_DELETE, [](){
+        clearPixels();
         webServer.send(200, "application/json", "");
     });
 
     webServer.on("/config", HTTP_POST, [](){
         // TODO
+        webServer.send(200, "application/json", "");
+    });
+
+    webServer.on("/config", HTTP_OPTIONS, [](){
         webServer.send(200, "application/json", "");
     });
 

@@ -2,7 +2,7 @@
 #include "./pixels.h"
 #include "./hw_setup.h"
 
-uint16_t PixelCount = 16 * 6;
+uint16_t PixelCount = 16; // * 6;
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(PixelCount, PIN_PIXEL, NEO_GRB + NEO_KHZ800);
 
 Adafruit_NeoPixel* initStrip() {
